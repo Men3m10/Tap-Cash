@@ -63,6 +63,7 @@ module.exports = {
     const token = generateToken(user._id);
 
     res.status(201).json({
+      message: "registered successfully",
       user: {
         id: user._id,
         name: user.name,
