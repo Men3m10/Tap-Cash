@@ -48,7 +48,10 @@ module.exports = {
 
     // If the user is a child, add them to their parent's children array
     if (role === "child") {
-      await User.findByIdAndUpdate(parent, { $push: { children: user._id } });
+      await User.findOneAndUpdate(
+        { ssid: parent },
+        { $push: { children: user._id } }
+      );
     }
     // create a new wallet for the user and assign it to them
     const wallet = await Wallet.create({
