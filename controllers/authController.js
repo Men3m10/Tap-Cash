@@ -60,12 +60,9 @@ module.exports = {
     user.wallet = wallet._id;
     await user.save();
     //2-generate token
-    const token = generateToken(user._id);
-
-    res.status(201).json({
-      message: "registered successfully",
-      user: {
-        id: user._id,
+    const token = jwt.sign(
+      {
+        userId: user._id,
         name: user.name,
         email: user.email,
         role: user.role,
@@ -76,9 +73,18 @@ module.exports = {
         children: user.children,
         transactions: user.transactions,
       },
+      process.env.JWT_SECRET_KEY,
+      {
+        expiresIn: process.env.JWT_KEY_EXPIRED,
+      }
+    );
+
+    res.status(201).json({
+      message: "registered successfully",
       token,
     });
   }),
+
 
   login: asyncHandler(async (req, res, next) => {
     //1-check ssid and password is in body ==> in validation
