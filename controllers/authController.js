@@ -94,11 +94,11 @@ module.exports = {
       .populate("wallet")
       .populate("transactions");
 
-     if (!user || !(await bcrypt.compare(password, user.password))) {
-      return res
-        .status(401)
-        .json({ message: "national id or password is incorrect" });
-     
+    if (!user || !(await bcrypt.compare(password, user.password))) {
+      return res.status(400).json({
+        message: "55555555555555555555555555555555",
+      });
+      // next(new ApiErr("national id or password is incorrect", 401));
     }
     //3- generate token
     const token = generateToken(user._id);
