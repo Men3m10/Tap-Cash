@@ -15,18 +15,24 @@ const {
   getTransactionById,
   getTransactions,
   updateTransactionById,
-  transactionStatus,
+
+  getLoggedUserTransactions,
+  getUserTransaction,
+  approvingTransaction,
 } = require("../controllers/transactionController");
 
 //for all routes under
 Router.use(auth.Protect);
 Router.use(auth.allowedTo("parent", "child"));
 
-Router.post("/", createTransactionValidation, createTransaction);
+Router.get("/getMyTransactions", getLoggedUserTransactions, getUserTransaction);
+
+Router.post("/create", createTransactionValidation, createTransaction);
+Router.post("/approve/:id", approvingTransaction);
 Router.get("/", getTransactions);
 Router.get("/:id", getTransactionValidator, getTransactionById);
 Router.put("/:id", updateTransactionById);
-Router.put("/:id", transactionStatus);
+
 Router.delete("/:id", deleteTransactionValidator, deleteTransactionById);
 
 module.exports = Router;
