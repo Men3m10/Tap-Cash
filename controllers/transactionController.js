@@ -2,6 +2,8 @@ const asyncHandler = require("express-async-handler");
 const Transaction = require("../models/transactionsModel");
 const User = require("../models/userModel");
 const Wallet = require("../models/walletModel");
+const ApiErr = require("../utils/apiError");
+
 module.exports = {
   createTransaction: asyncHandler(async (req, res, next) => {
     // get the transaction data from the request body
@@ -49,28 +51,86 @@ module.exports = {
     await User.findByIdAndUpdate(receiverUser._id, {
       $push: { transactions: newTransaction._id },
     });
-
-    // update th sender and receiver wallets with th transaction amount
-    senderWallet.balance -= amount;
-    await senderWallet.save();
-
-    const receiverWallet = await Wallet.findById(receiverUser.wallet);
-    receiverWallet.balance += amount;
-    await receiverWallet.save();
     // send back th transaction data as a response
     res.status(201).json(newTransaction);
   }),
 
+  approvingTransaction: asyncHandler(async (req, res, next) => {
+    const { id } = req.params;
+    const { status } = req.body;
+    // Validate the input
+    if (!id || !status) {
+      return next(new ApiErr("Missing required parameters", 400));
+    }
+    if (!["approved", "declined"].includes(status)) {
+      return next(new ApiErr("Invalid status value", 400));
+    }
+    const transaction = await Transaction.findById(id);
+    if (!transaction) {
+      return next(new ApiErr("Transaction not found", 404));
+    }
+    if (transaction.status !== "pending") {
+      return next(new ApiErr("Transaction already processed", 400));
+    }
+    transaction.status = status;
+    await transaction.save();
+    if (status === "approved") {
+      // Find the sender and receiver wallets
+      const senderWallet = await Wallet.findOne({ owner: transaction.sender });
+      const receiverWallet = await Wallet.findOne({
+        owner: transaction.receiver,
+      });
+
+      if (!senderWallet || !receiverWallet) {
+        return next(new ApiErr("Wallet not found", 400));
+      }
+
+      if (senderWallet.balance < transaction.amount) {
+        return next(new ApiErr("Insufficient balance", 400));
+      }
+      // Update the sender and receiver wallets balance
+      senderWallet.balance -= transaction.amount;
+      receiverWallet.balance += transaction.amount;
+      await senderWallet.save();
+      await receiverWallet.save();
+    }
+    if (status === "declined") {
+      return res.status(200).json({ message: "transaction decliend !" });
+    }
+    // Send a success response with the updated transaction
+    res.status(200).json({ message: "Transaction updated", transaction });
+  }),
   getTransactions: asyncHandler(async (req, res, next) => {
     // find all transactions in th database and populate their sender and receiver fields
     const transactions = await Transaction.find()
       .populate("sender")
       .populate("receiver");
-
+    if (!transactions) {
+      return res.status(404).json({ message: "No transactions found" });
+    }
     // send back th transactions data as a response
     res.status(200).json(transactions);
   }),
+  getLoggedUserTransactions: asyncHandler(async (req, res, next) => {
+    req.params.id = req.user._id;
+    next();
+  }),
+  getUserTransaction: asyncHandler(async (req, res, next) => {
+    // get the user id from the request params
+    const { id } = req.params;
 
+    // find the user by id in the database and populate their wallet and children fields
+    const user = await User.findById(id)
+      .populate("transactions")
+      .select("transactions")
+      .populate("sender");
+    // check if the user exists
+    if (!user) {
+      return res.status(404).json({ message: "User not found" });
+    }
+    // send back the user data as a response
+    res.status(200).json(user);
+  }),
   getTransactionById: asyncHandler(async (req, res, next) => {
     // get th transaction id from th request params
     const { id } = req.params;
@@ -120,27 +180,5 @@ module.exports = {
 
     // send back a success message as a response
     res.status(200).json({ message: "Transaction deleted successfully" });
-  }),
-  transactionStatus: asyncHandler(async (req, res, next) => {
-    const { id } = req.params;
-    const { status } = req.body;
-    if (!status) {
-      returnres.status(400).json({ message: "Missing required fields" });
-    }
-    if (status !== "approved" && status !== "declined") {
-      returnres.status(400).json({ message: "Invalid action" });
-    }
-
-    // Find the transaction by its id in the database
-    const transaction = await Transaction.findById(id);
-    if (!transaction) {
-      returnres.status(404).json({ message: "Transaction not found" });
-    }
-    // Check if the transaction is still pending
-    if (transaction.status !== "pending") {
-      return res.status(409).json({ message: "Transaction already processed" });
-    }
-    // Update transaction status according to action
-    await Transaction.findByIdAndUpdate(id, { status }, { new: true });
   }),
 };
