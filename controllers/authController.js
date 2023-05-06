@@ -85,13 +85,14 @@ module.exports = {
     });
   }),
 
-
   login: asyncHandler(async (req, res, next) => {
     //1-check ssid and password is in body ==> in validation
     //2- check ssid is created and password is correct
     // get the user credentials from the request body
     const { ssid, password } = req.body;
-    const user = await User.findOne({ ssid }).populate("wallet");
+    const user = await User.findOne({ ssid })
+      .populate("wallet")
+      .populate("transactions");
 
     if (!user || !(await bcrypt.compare(password, user.password))) {
       return next(new ApiErr("national id or password is incorrect", 401));
@@ -109,6 +110,7 @@ module.exports = {
         wallet: user.wallet,
         ssid: user.ssid,
         phone: user.phone,
+        transactions: user.transactions,
       },
       token,
     });
@@ -192,7 +194,7 @@ module.exports = {
       .createHash("sha256")
       .update(ResetCode)
       .digest("hex");
- console.log(ResetCode);
+    console.log(ResetCode);
     //save hashed reset code into db
     user.passwordRestCode = hashedRestCode;
     //add expiration time to rest code (10 min)
