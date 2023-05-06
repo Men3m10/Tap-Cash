@@ -192,7 +192,7 @@ module.exports = {
       .createHash("sha256")
       .update(ResetCode)
       .digest("hex");
-
+ console.log(ResetCode);
     //save hashed reset code into db
     user.passwordRestCode = hashedRestCode;
     //add expiration time to rest code (10 min)
