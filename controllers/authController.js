@@ -115,7 +115,7 @@ module.exports = {
       .populate("transactions");
 
     if (!user || !(await bcrypt.compare(password, user.password))) {
-      return next(new ApiErr("national id or password is incorrect", 401));
+      return res.status(400).json({ message: "nnnnnnnnnn" });
     }
     //3- generate token
     const token = jwt.sign(
