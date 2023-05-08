@@ -14,7 +14,6 @@ const {
 } = require("../utils/validation/userValidation");
 
 const {
-  uploadBrandImage,
   resizeImage,
   updateUser,
   updateUserPassword,
@@ -37,35 +36,16 @@ Router.put(
   changeLoggedPasswordValidator,
   updateLoggedUserPassword
 );
-Router.put(
-  "/updateMyData",
-
-  updateLoggedUserValidator,
-  updateLoggedUserData
-);
+Router.put("/updateMyData", updateLoggedUserValidator, updateLoggedUserData);
 
 /////////////////////////////////////////////////////////////////////////////////////
 //Admin
 //for all routes under
 Router.use(auth.allowedTo("parent", "child"));
-// Router.post(
-//   "/",
-//   uploadBrandImage,
-//   resizeImage,
-//   createUserValidator,
-//   createUser
-// );
-// Router.get("/", getUsers);
 
 Router.get("/:id", getUserValidator, getUserById);
 
-Router.put(
-  "/:id",
-  uploadBrandImage,
-  resizeImage,
-  updateUserValidator,
-  updateUser
-);
+Router.put("/:id", updateUserValidator, updateUser);
 Router.put("/changePassword/:id", changePasswordValidator, updateUserPassword);
 Router.delete("/:id", deleteUserValidator, deleteUserById);
 
