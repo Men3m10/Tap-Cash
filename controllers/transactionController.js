@@ -13,7 +13,7 @@ module.exports = {
     const senderUser = await User.findById(sender);
     const receiverUser = await User.findById(receiver);
     if (!senderUser || !receiverUser) {
-      return res.status(404).json({ message: "Invalid users" });
+      return res.json({ message: "Invalid users" });
     }
 
     // Check if both users have different roles and are related as parent and child or vice versa
@@ -23,15 +23,13 @@ module.exports = {
         receiverUser.role === "child") ||
       (senderUser.role === "child" && senderUser.parent !== receiverUser._id)
     ) {
-      return res
-        .status(403)
-        .json({ message: "Cannot send money to this user" });
+      return res.json({ message: "Cannot send money to this user" });
     }
 
     // check if the sender has enough balance in their wallet
     const senderWallet = await Wallet.findById(senderUser.wallet);
     if (senderWallet.balance < amount) {
-      return res.status(400).json({ message: "Insufficient funds" });
+      return res.json({ message: "Insufficient funds" });
     }
 
     // create a new transaction instance with the data
@@ -60,17 +58,17 @@ module.exports = {
     const { status } = req.body;
     // Validate the input
     if (!id || !status) {
-      return next(new ApiErr("Missing required parameters", 400));
+      return res.json({ message: "Missing required parameters" });
     }
     if (!["approved", "declined"].includes(status)) {
-      return next(new ApiErr("Invalid status value", 400));
+      return res.json({ message: "Invalid status value" });
     }
     const transaction = await Transaction.findById(id);
     if (!transaction) {
-      return next(new ApiErr("Transaction not found", 404));
+      return res.json({ message: "Transaction not found" });
     }
     if (transaction.status !== "pending") {
-      return next(new ApiErr("Transaction already processed", 400));
+      return res.json({ message: "Transaction already processed" });
     }
     transaction.status = status;
     await transaction.save();
@@ -82,11 +80,11 @@ module.exports = {
       });
 
       if (!senderWallet || !receiverWallet) {
-        return next(new ApiErr("Wallet not found", 400));
+        return res.json({ message: "Wallet not found" });
       }
 
       if (senderWallet.balance < transaction.amount) {
-        return next(new ApiErr("Insufficient balance", 400));
+        return res.json({ message: "Insufficient balance" });
       }
       // Update the sender and receiver wallets balance
       senderWallet.balance -= transaction.amount;
@@ -106,7 +104,7 @@ module.exports = {
       .populate("sender")
       .populate("receiver");
     if (!transactions) {
-      return res.status(404).json({ message: "No transactions found" });
+      return res.json({ message: "No transactions found" });
     }
     // send back th transactions data as a response
     res.status(200).json(transactions);
@@ -126,7 +124,7 @@ module.exports = {
       .populate("sender");
     // check if the user exists
     if (!user) {
-      return res.status(404).json({ message: "User not found" });
+      return res.json({ message: "User not found" });
     }
     // send back the user data as a response
     res.status(200).json(user);
@@ -141,7 +139,7 @@ module.exports = {
       .populate("receiver");
     // check if th transaction exists
     if (!transaction) {
-      return res.status(404).json({ message: "Transaction not found" });
+      return res.json({ message: "Transaction not found" });
     }
 
     // send back th transaction data as a response
@@ -160,7 +158,7 @@ module.exports = {
     );
 
     if (!updatedTransaction) {
-      return next(new ApiErr(`Transaction not found`, 404));
+      return res.json({ message: "Transaction not found" });
     }
 
     // send back th updated transaction data as a response
@@ -175,7 +173,7 @@ module.exports = {
 
     // check if th transaction exists
     if (!deletedTransaction) {
-      return res.status(404).json({ message: "Transaction not found" });
+      return res.json({ message: "Transaction not found" });
     }
 
     // send back a success message as a response
