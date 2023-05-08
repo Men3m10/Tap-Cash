@@ -15,8 +15,17 @@ const Wallet = require("../models/walletModel");
 module.exports = {
   signUp: asyncHandler(async (req, res, next) => {
     //1) get the user data from the request body
-    const { name, email, password, role, ssid, phone, parent } = req.body;
-    signUpValidation(req, res, name, email, password, ssid);
+    const {
+      name,
+      email,
+      password,
+      role,
+      ssid,
+      phone,
+      parent,
+      confirmPassword,
+    } = req.body;
+    signUpValidation(req, res, name, email, password, ssid, confirmPassword);
     // check if the email already exists in the database
     const existingUser = await User.findOne({ email });
     if (existingUser) {
