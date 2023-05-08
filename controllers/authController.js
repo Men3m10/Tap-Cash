@@ -2,7 +2,6 @@ const crypto = require("crypto");
 const asyncHandler = require("express-async-handler");
 const jwt = require("jsonwebtoken");
 const bcrypt = require("bcryptjs");
-const ApiErr = require("../utils/apiError");
 const sendEmail = require("../utils/sendEmail");
 const generateToken = require("../utils/createToken");
 const {
@@ -29,17 +28,17 @@ module.exports = {
     // check if the email already exists in the database
     const existingUser = await User.findOne({ email });
     if (existingUser) {
-      return res.status(400).json({ message: "Email already taken" });
+      return res.json({ message: "Email already taken" });
     }
 
     // check if the ssid already exists in the database
     const existingUserId = await User.findOne({ ssid });
     if (existingUserId) {
-      return res.status(400).json({ message: "National Id Already Exists" });
+      return res.json({ message: "National Id Already Exists" });
     }
 
     if (role === "child" && !parent) {
-      return res.status(400).json({ message: "Parent is required for child" });
+      return res.json({ message: "Parent is required for child" });
     }
     //2)create user
     const user = await User.create({
@@ -115,7 +114,7 @@ module.exports = {
       .populate("transactions");
 
     if (!user || !(await bcrypt.compare(password, user.password))) {
-      return res.json({ message: "nnnnnnnnnn" });
+      return res.json({ message: "national id or password is incorrect" });
     }
     //3- generate token
     const token = jwt.sign(
@@ -164,7 +163,7 @@ module.exports = {
       token = req.headers.authorization.split(" ")[1];
     }
     if (!token) {
-      return next(new ApiErr("please login first ", 401));
+      return res.json({ message: "please login first" });
     }
     /////////////////////////////////////////////////////////////////////
 
@@ -176,9 +175,9 @@ module.exports = {
     //3-check if user exists
     const currentUser = await User.findById(decoded.userId);
     if (!currentUser) {
-      return next(
-        new ApiErr("User who belongs to this token is no longer exist", 401)
-      );
+      return res.json({
+        message: "User who belongs to this token is no longer exist",
+      });
     }
     ////////////////////////////////////////////////////////////////////////////////
 
@@ -191,12 +190,9 @@ module.exports = {
       // console.log(passwordChangedAtTotimeStamp, decoded.iat); (decoded.iat)->time when token created
       //Password changed after token created (Error)
       if (passwordChangedAtTotimeStamp > decoded.iat) {
-        return next(
-          new ApiErr(
-            "user recently changed his password , please login again..",
-            401
-          )
-        );
+        return res.json({
+          message: "user recently changed his password , please login again..",
+        });
       }
     }
 
@@ -210,9 +206,9 @@ module.exports = {
       //access role
       //access registered user (req.user.role)
       if (!roles.includes(req.user.role)) {
-        return next(
-          new ApiErr("you are not allowed to access this route", 403)
-        );
+        return res.json({
+          message: "you are not allowed to access this route",
+        });
       }
       next();
     }),
@@ -221,9 +217,9 @@ module.exports = {
     //1-get user by email
     const user = await User.findOne({ email: req.body.email });
     if (!user) {
-      return next(
-        new ApiErr(`there is no user with this email ${req.body.email}`, 404)
-      );
+      return res.json({
+        message: `there is no user with this email ${req.body.email}`,
+      });
     }
     //2-if user exist , generate random 6 digits and save it in db and encrypt it to protect from hacking
     const ResetCode = Math.floor(100000 + Math.random() * 900000).toString();
@@ -252,7 +248,9 @@ module.exports = {
       user.passwordRestExpires = undefined;
       user.passwordRestVerified = undefined;
       await user.save();
-      return next(new ApiErr("there is an error in sending to email", 500));
+      return res.json({
+        message: "there is an error in sending to email",
+      });
     }
 
     res
@@ -269,14 +267,14 @@ module.exports = {
     //2)  get user by reset number
     const user = await User.findOne({ passwordRestCode: hashedRestCode });
     if (!user) {
-      return next(new ApiErr("Reset code invalid", 404));
+      return res.json({ message: "Reset code invalid" });
     }
     //3) check reset code is  expired
     const checkExpired = await User.findOne({
       passwordRestExpires: { $gt: Date.now() },
     }); //لازم يكون وقت الانتهاء اكبر من الوقت اللي انا بدخله فيه
     if (!checkExpired) {
-      return next(new ApiErr("Reset code expired", 401));
+      return res.json({ message: "Reset code expired" });
     }
     //4)valid rest code
     user.passwordRestVerified = true;
@@ -290,13 +288,13 @@ module.exports = {
     //get user by email
     const user = await User.findOne({ email: req.body.email });
     if (!user) {
-      return next(new ApiErr("No user with this Email ", 404));
+      return res.json({ message: "No user with this Email " });
     }
     //2)if verify is true
     if (!user.passwordRestVerified) {
-      return next(
-        new ApiErr("We send a Reset Code ,Please verify your email", 400)
-      );
+      return res.json({
+        message: "We send a Reset Code ,Please verify your email",
+      });
     }
 
     //3) set new password
