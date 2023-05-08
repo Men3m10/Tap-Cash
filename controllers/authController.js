@@ -5,20 +5,18 @@ const bcrypt = require("bcryptjs");
 const ApiErr = require("../utils/apiError");
 const sendEmail = require("../utils/sendEmail");
 const generateToken = require("../utils/createToken");
-
+const {
+  signUpValidation,
+  logInValidation,
+} = require("../utils/validation/authValidation");
 const User = require("../models/userModel");
 const Wallet = require("../models/walletModel");
-
-// const generateToken = (payload) =>
-//   jwt.sign({ userId: payload }, process.env.JWT_SECRET_KEY, {
-//     expiresIn: process.env.JWT_KEY_EXPIRED,
-//   });
 
 module.exports = {
   signUp: asyncHandler(async (req, res, next) => {
     //1) get the user data from the request body
     const { name, email, password, role, ssid, phone, parent } = req.body;
-
+    signUpValidation(req, res, name, email, password, ssid);
     // check if the email already exists in the database
     const existingUser = await User.findOne({ email });
     if (existingUser) {
@@ -90,24 +88,18 @@ module.exports = {
     //2- check ssid is created and password is correct
     // get the user credentials from the request body
     const { ssid, password } = req.body;
+    logInValidation(res, password, ssid);
     const user = await User.findOne({ ssid })
       .populate("wallet")
       .populate("transactions");
 
-    // if (!user || !(await bcrypt.compare(password, user.password))) {
-    //   return res.status(400).json({
-    //     message: "55555555555555555555555555555555",
-    //   });
-    //   // next(new ApiErr("national id or password is incorrect", 401));
-
-    // }
+    if (!user || !(await bcrypt.compare(password, user.password))) {
+      return next(new ApiErr("national id or password is incorrect", 401));
+    }
     //3- generate token
-    const token = generateToken(user._id);
-
-    res.status(201).json({
-      message: "Logged In",
-      user: {
-        id: user._id,
+    const token = jwt.sign(
+      {
+        userId: user._id,
         name: user.name,
         email: user.email,
         role: user.role,
@@ -115,7 +107,16 @@ module.exports = {
         ssid: user.ssid,
         phone: user.phone,
         transactions: user.transactions,
+        visa: user.visa,
       },
+      process.env.JWT_SECRET_KEY,
+      {
+        expiresIn: process.env.JWT_KEY_EXPIRED,
+      }
+    );
+
+    res.status(201).json({
+      message: "Logged In",
       token,
     });
   }),
@@ -171,7 +172,7 @@ module.exports = {
     next();
   }),
 
-  //['admin' , 'manager]
+  //['parent' , 'child]
   allowedTo: (...roles) =>
     asyncHandler(async (req, res, next) => {
       //access role
@@ -198,7 +199,7 @@ module.exports = {
       .createHash("sha256")
       .update(ResetCode)
       .digest("hex");
-    console.log(ResetCode);
+
     //save hashed reset code into db
     user.passwordRestCode = hashedRestCode;
     //add expiration time to rest code (10 min)
@@ -208,8 +209,6 @@ module.exports = {
     await user.save();
     //3-send the reset code via email
     const message = `Hi ${user.name} ,\n We received a request to reset the password on your Tab-Cash Account. \n${ResetCode} \n Enter this code to complete the reset \n thanks for helping us keep your account secure \n the Tab-cash team`;
-    // عملنا كدا علشان هو فوق عمل سيف للحاجات ف الداتا بيز حتي لو الريسيت لسه متبعتش او لو كان فيه حاجه غلط
-    //ف لو اي حاجه غلط حصلت يرجع القيم دي كلها ل غير معرفه
     try {
       await sendEmail({
         email: user.email,
