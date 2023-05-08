@@ -15,8 +15,8 @@ const {
   updateWalletById,
 } = require("../controllers/walletController");
 
-// //for all routes under
-// Router.use(auth.Protect);
+//for all routes under
+Router.use(auth.Protect);
 Router.use(auth.allowedTo("parent", "child"));
 
 Router.get("/", getWallets);
