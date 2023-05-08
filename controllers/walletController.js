@@ -16,7 +16,7 @@ module.exports = {
 
     // check if the wallet exists
     if (!wallet) {
-      return res.status(404).json({ message: "Wallet not found" });
+      return res.json({ message: "Wallet not found" });
     }
     // send back the wallet data as a response
     res.status(200).json(wallet);
@@ -35,7 +35,7 @@ module.exports = {
 
     // check if the wallet exists
     if (!updatedWallet) {
-      return res.status(404).json({ message: "Wallet not found" });
+      return res.json({ message: "Wallet not found" });
     }
 
     // send back the updated wallet data as a response
@@ -49,7 +49,7 @@ module.exports = {
 
     // check if the wallet exists
     if (!deletedWallet) {
-      return res.status(404).json({ message: "Wallet not found" });
+      return res.json({ message: "Wallet not found" });
     }
 
     // send back a success message as a response
