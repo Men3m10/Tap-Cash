@@ -24,7 +24,7 @@ const signUpValidation = (
   if (ssid.length > 14 || ssid.length < 14 || ssid.length == 0) {
     return res.status(400).json({ message: "national id must be 14 number" });
   }
-  if (confirmPassword.lengthlength < 6 || confirmPassword.length == 0) {
+  if (confirmPassword.length < 6 || confirmPassword.length == 0) {
     return res.status(400).json({ message: "confirm password is required" });
   }
 };
