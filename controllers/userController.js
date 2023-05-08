@@ -1,33 +1,12 @@
-const { v4: uuidv4 } = require("uuid");
-const sharp = require("sharp");
 const asyncHandler = require("express-async-handler");
 const bcrypt = require("bcryptjs");
 const ApiErr = require("../utils/apiError");
 const generateToken = require("../utils/createToken");
 
-const { uploadSingleImage } = require("../middlewares/uploadImageMiddleware");
-
 const User = require("../models/userModel");
-const Wallet = require("../models/walletModel");
 ///////////////////////////////////////////////////////
 
 module.exports = {
-  uploadBrandImage: uploadSingleImage("userImg"),
-
-  resizeImage: asyncHandler(async (req, res, next) => {
-    const filename = `user-${uuidv4()}-${Date.now()}.jpeg`;
-    if (req.file) {
-      await sharp(req.file.buffer)
-        .resize(600, 600)
-        .toFormat("jpeg")
-        .jpeg({ quality: 90 })
-        .toFile(`uploads/users/${filename}`);
-      //save image to our dataBase
-      req.body.userImg = filename;
-    }
-
-    next();
-  }),
   //=======================================================================================
   getUserById: asyncHandler(async (req, res, next) => {
     // get the user id from the request params
@@ -36,10 +15,11 @@ module.exports = {
     // find the user by id in the database and populate their wallet and children fields
     const user = await User.findById(id)
       .populate("wallet")
-      .populate("children");
+      .populate("children")
+      .populate("transactions");
     // check if the user exists
     if (!user) {
-      return res.status(404).json({ message: "User not found" });
+      return res.json({ message: "User not found" });
     }
     // send back the user data as a response
     res.status(200).json(user);
@@ -51,7 +31,7 @@ module.exports = {
     const deletedUser = await User.findByIdAndDelete(id);
     // check if the user exists
     if (!deletedUser) {
-      return res.status(404).json({ message: "User not found" });
+      return res.json({ message: "User not found" });
     }
     // send back a success message as a response
     res.status(200).json({ message: "User deleted successfully" });
@@ -62,7 +42,7 @@ module.exports = {
       new: true,
     });
     if (!document) {
-      return next(new ApiErr(`no user with this id`, 404));
+      return res.json({ message: "no user with this id" });
     }
 
     res.status(200).json({ data: document });
@@ -83,7 +63,7 @@ module.exports = {
       }
     );
     if (!document) {
-      return next(new ApiErr(`no user with this id`, 404));
+      return res.json({ message: "no user with this id" });
     }
 
     res.status(200).json({ data: document });
@@ -113,7 +93,7 @@ module.exports = {
       }
     );
     if (!user) {
-      return next(new ApiErr(`no user with this id`, 404));
+      return res.json({ message: "no user with this id" });
     }
 
     //2) generate token
