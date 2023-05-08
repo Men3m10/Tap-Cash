@@ -115,7 +115,7 @@ module.exports = {
       .populate("transactions");
 
     if (!user || !(await bcrypt.compare(password, user.password))) {
-      return res.status(400).json({ message: "nnnnnnnnnn" });
+      return res.json({ message: "nnnnnnnnnn" });
     }
     //3- generate token
     const token = jwt.sign(
