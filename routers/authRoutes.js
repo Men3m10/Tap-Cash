@@ -2,10 +2,6 @@ const express = require("express");
 
 const Router = express.Router();
 
-const {
-  signupValidator,
-  loginValidator,
-} = require("../utils/validation/authValidation");
 
 const {
   signUp,
@@ -15,8 +11,8 @@ const {
   resetPassword,
 } = require("../controllers/authController");
 
-Router.post("/signup", signupValidator, signUp);
-Router.post("/login", loginValidator, login);
+Router.post("/signup", signUp);
+Router.post("/login", login);
 Router.post("/forgetPassword", forgetPassword);
 Router.post("/verify", verifyResetCode);
 Router.put("/resetPassword", resetPassword);
