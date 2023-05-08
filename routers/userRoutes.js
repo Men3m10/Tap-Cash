@@ -24,7 +24,7 @@ const {
 } = require("../controllers/userController");
 ////////////////////////////////////////////////////////////////////////////////////
 //for all routes under
-// Router.use(auth.Protect);
+Router.use(auth.Protect);
 
 // //User
 Router.get("/getMyData", getLoggedUserData, getUserById);
