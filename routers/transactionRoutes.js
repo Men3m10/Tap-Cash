@@ -21,7 +21,7 @@ const {
   approvingTransaction,
 } = require("../controllers/transactionController");
 
-
+Router.use(auth.Protect);
 Router.use(auth.allowedTo("parent", "child"));
 
 Router.get("/getMyTransactions", getLoggedUserTransactions, getUserTransaction);
