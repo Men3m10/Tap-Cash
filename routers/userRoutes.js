@@ -4,7 +4,6 @@ const Router = express.Router();
 const auth = require("../controllers/authController");
 
 const {
-  createUserValidator,
   deleteUserValidator,
   getUserValidator,
   updateUserValidator,
@@ -14,20 +13,18 @@ const {
 } = require("../utils/validation/userValidation");
 
 const {
-  resizeImage,
   updateUser,
   updateUserPassword,
   getLoggedUserData,
   updateLoggedUserPassword,
   updateLoggedUserData,
-  deactiveLoggedUserData,
-  activeLoggedUserData,
+
   getUserById,
   deleteUserById,
 } = require("../controllers/userController");
 ////////////////////////////////////////////////////////////////////////////////////
 //for all routes under
-Router.use(auth.Protect);
+// Router.use(auth.Protect);
 
 // //User
 Router.get("/getMyData", getLoggedUserData, getUserById);
