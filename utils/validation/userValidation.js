@@ -6,7 +6,14 @@ const validation = require("../../middlewares/validator");
 const User = require("../../models/userModel");
 
 exports.createUserValidator = [
-  check("name")
+  check("firstName")
+    .notEmpty()
+    .withMessage("User name is required ")
+    .trim()
+    .isLength({ min: 3 })
+    .withMessage("too short User name "),
+
+  check("lastName")
     .notEmpty()
     .withMessage("User name is required ")
     .trim()
