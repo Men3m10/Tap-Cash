@@ -16,12 +16,6 @@ const walletSchema = new Schema(
       ref: "User",
       required: true,
     },
-    // children: [
-    //   {
-    //     type: mongoose.Schema.ObjectId,
-    //     ref: "User",
-    //   },
-    // ],
   },
   { timestamps: true }
 );
