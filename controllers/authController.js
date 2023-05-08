@@ -79,6 +79,18 @@ module.exports = {
 
     res.status(201).json({
       message: "registered successfully",
+      data: {
+        userId: user._id,
+        name: user.name,
+        email: user.email,
+        role: user.role,
+        wallet: user.wallet,
+        ssid: user.ssid,
+        password: user.password,
+        phone: user.phone,
+        children: user.children,
+        transactions: user.transactions,
+      },
       token,
     });
   }),
@@ -117,6 +129,17 @@ module.exports = {
 
     res.status(201).json({
       message: "Logged In",
+      data: {
+        userId: user._id,
+        name: user.name,
+        email: user.email,
+        role: user.role,
+        wallet: user.wallet,
+        ssid: user.ssid,
+        phone: user.phone,
+        transactions: user.transactions,
+        visa: user.visa,
+      },
       token,
     });
   }),
