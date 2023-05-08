@@ -12,7 +12,7 @@ const userSchema = new mongoose.Schema(
     email: {
       type: String,
       required: true,
-      unique: true,
+      unique: [true, "email already exists "],
     },
     ssid: {
       type: String,
@@ -49,6 +49,7 @@ const userSchema = new mongoose.Schema(
     parent: { type: mongoose.Schema.ObjectId, ref: "User" },
     children: [{ type: mongoose.Schema.ObjectId, ref: "User" }],
     transactions: [{ type: mongoose.Schema.ObjectId, ref: "Transaction" }],
+    visa: [{ type: mongoose.Schema.ObjectId, ref: "Visa" }],
   },
   { timestamps: true, strictPopulate: false }
 );
