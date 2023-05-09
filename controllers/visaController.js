@@ -239,7 +239,8 @@ module.exports = {
     if (visa.balance !== 0) {
       visa.balance -= amount;
       await visa.save();
-      wallet.balance += amount;
+      wallet.balance = wallet.balance * 1 + amount;
+
       await wallet.save();
     } else {
       return res.json({ message: "Visa balance is 0" });
