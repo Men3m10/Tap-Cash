@@ -116,7 +116,8 @@ module.exports = {
     logInValidation(res, password, ssid);
     const user = await User.findOne({ ssid })
       .populate("wallet")
-      .populate("transactions");
+      .populate("transactions")
+      .populate("children");
 
     if (!user || !(await bcrypt.compare(password, user.password))) {
       return res.json({ message: "national id or password is incorrect" });
@@ -133,6 +134,7 @@ module.exports = {
         phone: user.phone,
         transactions: user.transactions,
         visa: user.visa,
+        children: user.children,
       },
       process.env.JWT_SECRET_KEY,
       {
@@ -152,6 +154,7 @@ module.exports = {
         phone: user.phone,
         transactions: user.transactions,
         visa: user.visa,
+        children: user.children,
       },
       token,
     });
