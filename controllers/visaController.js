@@ -100,6 +100,9 @@ module.exports = {
       $push: { visa: visaCreditCard._id },
     });
     const wallet = await Wallet.findOne({ owner: req.user.id });
+    if (wallet.balance <= 0) {
+      return res.json({ message: "your wallet is empty" });
+    }
 
     wallet.balance -= amount;
     await wallet.save();
@@ -131,9 +134,40 @@ module.exports = {
       visaExpired: { $gt: Date.now() },
     }); //لازم يكون وقت الانتهاء اكبر من الوقت اللي انا بدخله فيه
     if (!checkExpired) {
-      return res.json({ message: "Visa  is expired" });
+      return res.json({ message: "Visa is expired" });
+    }
+    if (!checkExpired && visa.balance > 0) {
+      console.log(visa.balance);
+      // const wallet = await Wallet.findOne({ owner: visa.owner });
+      // wallet.balance += visa.balance;
+      // await wallet.save();
     }
     next();
+  }),
+  refundBalanceFromExpired: asyncHandler(async (req, res, next) => {
+    //1)get Visa
+    const { number } = req.body;
+    //hashing visa
+    const hashedVisanum = crypto
+      .createHash("sha256")
+      .update(number)
+      .digest("hex");
+    const visa = await Visa.findOne({ number: hashedVisanum });
+    //2)check visa expired or not
+    // check if the visa card is expired
+    const checkExpired = await Visa.findOne({
+      visaExpired: { $gt: Date.now() },
+    });
+    if (visa.balance == 0) {
+      return res.json({ message: "we already returned your money" });
+    }
+    //3)if expired get the rest of the balance and add this balance to the user wallet
+    if (!checkExpired) {
+      const wallet = await Wallet.findOne({ owner: visa.owner });
+      wallet.balance += visa.balance;
+      await wallet.save();
+    }
+    res.status(200).json({ message: "the rest of visa balance is refunded " });
   }),
   payByVisa: asyncHandler(async (req, res, next) => {
     // Get the card details from the request body
@@ -163,11 +197,6 @@ module.exports = {
       return res.json({ message: "there is an error in one of your inputs" });
     }
 
-    // if (!checkExpired && visa.balance >0) {
-    //   const wallet = await Wallet.findOne({ owner: visa.owner });
-    //   wallet.balance += visa.balance;
-    //   await wallet.save();
-    // }
     if (visa.balance !== 0) {
       visa.balance -= cartMoney;
       await visa.save();
@@ -176,5 +205,48 @@ module.exports = {
     }
     //===================================
     res.status(200).json({ message: "Your Visa", data: visa });
+  }),
+  updateBalanceByVisa: asyncHandler(async (req, res, next) => {
+    // Get the card details from the request body
+    const { number, name, expiryDateString, cvv, phone, amount } = req.body;
+    //hashing visa
+    const hashedVisanum = crypto
+      .createHash("sha256")
+      .update(number)
+      .digest("hex");
+    //===================================
+    const hashedVisacvv = crypto.createHash("sha256").update(cvv).digest("hex");
+    //===================================
+
+    const visa = await Visa.findOne({ number: hashedVisanum });
+    // check if the visa exists
+    if (!visa) {
+      return res.json({ message: "Visa not found" });
+    }
+    // check if user enter a valid visa
+    if (
+      hashedVisanum !== visa.number ||
+      hashedVisacvv !== visa.cvv ||
+      expiryDateString !== visa.expiryDateString ||
+      name !== visa.name
+    ) {
+      return res.json({ message: "there is an error in one of your inputs" });
+    }
+    const user = await User.findOne({ phone });
+
+    if (!user) {
+      return res.json({ message: "No user with this phone number" });
+    }
+    const wallet = await Wallet.findOne({ owner: user._id });
+    if (visa.balance !== 0) {
+      visa.balance -= amount;
+      await visa.save();
+      wallet.balance += amount;
+      await wallet.save();
+    } else {
+      return res.json({ message: "Visa balance is 0" });
+    }
+    //===================================
+    res.status(200).json({ message: "Done" });
   }),
 };
