@@ -114,6 +114,7 @@ module.exports = {
       cvv,
       balance: amount,
       expiryDateString: formattedExpiryDate,
+      status: visaCreditCard.status,
     });
   }),
   checkExpiredVisa: asyncHandler(async (req, res, next) => {
