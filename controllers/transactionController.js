@@ -10,8 +10,8 @@ module.exports = {
     const { amount, sender, receiver, description } = req.body;
 
     // check if the sender and receiver are valid users
-    const senderUser = await User.findById(sender);
-    const receiverUser = await User.findById(receiver);
+    const senderUser = await User.findOne({ phone: sender });
+    const receiverUser = await User.findOne({ phone: receiver });
     if (!senderUser || !receiverUser) {
       return res.json({ message: "Invalid users" });
     }
