@@ -15,7 +15,7 @@ const sendEmail = async (emailOptions) => {
   //2)define email options (from whom ,to whome , email content )
 
   const mailOptions = {
-    from: "Tab-Cash App <TabCash.com>",
+    from: "Tap-Cash App <TapCash.com>",
     to: emailOptions.email,
     subject: emailOptions.subject,
     text: emailOptions.message,
