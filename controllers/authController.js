@@ -30,6 +30,11 @@ module.exports = {
     if (existingUser) {
       return res.json({ message: "Email already taken" });
     }
+    // check if the phone already exists in the database
+    const existingUserphone = await User.findOne({ phone });
+    if (existingUserphone) {
+      return res.json({ message: "phone already taken" });
+    }
 
     // check if the ssid already exists in the database
     const existingUserId = await User.findOne({ ssid });
