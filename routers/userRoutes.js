@@ -18,15 +18,14 @@ const {
   getLoggedUserData,
   updateLoggedUserPassword,
   updateLoggedUserData,
-
   getUserById,
   deleteUserById,
 } = require("../controllers/userController");
 ////////////////////////////////////////////////////////////////////////////////////
 //for all routes under
 Router.use(auth.Protect);
+//User
 
-// //User
 Router.get("/getMyData", getLoggedUserData, getUserById);
 Router.put(
   "/changeMyPassword",
@@ -36,7 +35,6 @@ Router.put(
 Router.put("/updateMyData", updateLoggedUserValidator, updateLoggedUserData);
 
 /////////////////////////////////////////////////////////////////////////////////////
-//Admin
 //for all routes under
 Router.use(auth.allowedTo("parent", "child"));
 
