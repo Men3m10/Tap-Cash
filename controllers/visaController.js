@@ -134,14 +134,11 @@ module.exports = {
       visaExpired: { $gt: Date.now() },
     }); //لازم يكون وقت الانتهاء اكبر من الوقت اللي انا بدخله فيه
     if (!checkExpired) {
+      visa.status === "Expired";
+      await visa.save();
       return res.json({ message: "Visa is expired" });
     }
-    if (!checkExpired && visa.balance > 0) {
-      console.log(visa.balance);
-      // const wallet = await Wallet.findOne({ owner: visa.owner });
-      // wallet.balance += visa.balance;
-      // await wallet.save();
-    }
+
     next();
   }),
   refundBalanceFromExpired: asyncHandler(async (req, res, next) => {
