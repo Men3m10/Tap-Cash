@@ -51,7 +51,7 @@ module.exports = {
     });
 
     // send back th transaction data as a response
-    res.status(201).json(newTransaction);
+    res.status(201).json({ message: "Done", newTransaction });
   }),
 
   approvingTransaction: asyncHandler(async (req, res, next) => {
