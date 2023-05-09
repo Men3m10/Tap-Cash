@@ -13,7 +13,7 @@ module.exports = {
     const senderUser = await User.findOne({ phone: sender });
     const receiverUser = await User.findOne({ phone: receiver });
     if (!senderUser || !receiverUser) {
-      return res.json({ message: "Invalid users" });
+      return res.json({ message: "Invalid users phone" });
     }
 
     // Check if both users have different roles and are related as parent and child or vice versa
