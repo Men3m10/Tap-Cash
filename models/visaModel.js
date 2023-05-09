@@ -42,20 +42,5 @@ const VisaSchema = new mongoose.Schema({
   },
 });
 
-// Define a method to check if the visa has sufficient balance for a transaction
-VisaSchema.methods.hasSufficientBalance = function (amount) {
-  return this.balance >= amount;
-};
-
-// Define a method to deduct an amount from the visa balance
-VisaSchema.methods.deductBalance = function (amount) {
-  this.balance -= amount;
-};
-
-// Define a method to add an amount to the visa balance
-VisaSchema.methods.addBalance = function (amount) {
-  this.balance += amount;
-};
-
 // Export the visa model
 module.exports = mongoose.model("Visa", VisaSchema);
