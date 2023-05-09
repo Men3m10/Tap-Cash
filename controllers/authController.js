@@ -241,7 +241,7 @@ module.exports = {
 
     await user.save();
     //3-send the reset code via email
-    const message = `Hi ${user.name} ,\n We received a request to reset the password on your Tab-Cash Account. \n${ResetCode} \n Enter this code to complete the reset \n thanks for helping us keep your account secure \n the Tab-cash team`;
+    const message = `Hi ${user.name} ,\n We received a request to reset the password on your Tap-Cash Account. \n${ResetCode} \n Enter this code to complete the reset \n thanks for helping us keep your account secure \n the Tap-cash team`;
     try {
       await sendEmail({
         email: user.email,
