@@ -29,6 +29,12 @@ const VisaSchema = new mongoose.Schema({
     required: true,
   },
   visaExpired: Date,
+  status: {
+    type: String,
+    enum: ["Expired", "notExpired"],
+    required: true,
+    default: "notExpired",
+  },
   // Visa balance
   balance: {
     type: Number,
