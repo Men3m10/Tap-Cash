@@ -1,66 +1,79 @@
-const { check } = require("express-validator");
-const slugify = require("slugify");
+const Validator = require("validator");
+const isEmpty = require("../is-empty");
 
-const validation = require("../../middlewares/validator");
+const validateSignup = (data) => {
+  let errors = {};
+  data.name = !isEmpty(data.name) ? data.name : "";
+  data.email = !isEmpty(data.email) ? data.email : "";
+  data.password = !isEmpty(data.password) ? data.password : "";
+  data.confirmPassword = !isEmpty(data.confirmPassword)
+    ? data.confirmPassword
+    : "";
+  data.ssid = !isEmpty(data.ssid) ? data.ssid : "";
+  data.phone = !isEmpty(data.phone) ? data.phone : "";
 
-const User = require("../../models/userModel");
+  if (!Validator.isLength(data.name, { min: 3, max: 20 })) {
+    errors = "Name must be between 3 and 30 characters";
+  }
 
-exports.signupValidator = [
-  check("name")
-    .notEmpty()
-    .withMessage("User name is required ")
-    .trim()
-    .isLength({ min: 3 })
-    .withMessage("too short User name ")
-    .custom((val, { req }) => {
-      req.body.slug = slugify(val);
-      return true;
-    }),
+  if (Validator.isEmpty(data.name)) {
+    errors = "Name  is required";
+  }
 
-  check("email")
-    .notEmpty()
-    .withMessage("Email is required")
-    .isEmail()
-    .withMessage("inValid Email")
-    .custom((val) =>
-      User.findOne({ email: val }).then((user) => {
-        if (user) {
-          return Promise.reject(new Error(`email already exist`));
-        }
-      })
-    ),
+  if (Validator.isEmpty(data.email)) {
+    errors = "email  is required";
+  }
+  if (Validator.isEmpty(data.phone)) {
+    errors = "phone  is required";
+  }
 
-  check("password")
-    .notEmpty()
-    .withMessage("Password is required")
-    .isLength({ min: 6 })
-    .withMessage("too short Password")
-    .custom((password, { req }) => {
-      // eslint-disable-next-line eqeqeq
-      if (password != req.body.confirmPassword) {
-        throw new Error("password confirmation is inCorrect");
-      }
-      return true;
-    }),
+  if (Validator.isEmpty(data.password)) {
+    errors = "password  is required";
+  }
 
-  check("confirmPassword")
-    .notEmpty()
-    .withMessage("confirm password is required"),
+  if (data.confirmPassword !== data.password) {
+    errors = "confirm password not equal password";
+  }
+  if (!Validator.isLength(data.password, { min: 6 })) {
+    errors = "Name must be between 6";
+  }
+  if (!Validator.isLength(data.ssid, { min: 14, max: 14 })) {
+    errors = "National Id must be 14 char";
+  }
 
-  validation,
-];
+  if (Validator.isEmpty(data.confirmPassword)) {
+    errors = "Confirm Password is required";
+  }
 
-exports.loginValidator = [
-  check("email")
-    .notEmpty()
-    .withMessage("Email is required")
-    .isEmail()
-    .withMessage("inValid Email"),
+  return {
+    errors,
+    isValid: isEmpty(errors),
+  };
+};
 
-  check("password")
-    .notEmpty()
-    .withMessage("Password is required")
-    .isLength({ min: 6 })
-    .withMessage("too short Password"),
-  validation,
-];
+const validateLogin = (data) => {
+  let errors = {};
+  data.ssid = !isEmpty(data.ssid) ? data.ssid : "";
+  data.password = !isEmpty(data.password) ? data.password : "";
+
+  if (!Validator.isLength(data.ssid, { min: 14, max: 14 })) {
+    errors = "national id must be of 14 characters";
+  }
+
+  if (Validator.isEmpty(data.ssid)) {
+    errors = "national id is required";
+  }
+  if (Validator.isEmpty(data.password)) {
+    errors = "Password  is required";
+  }
+
+  if (!Validator.isLength(data.password, { min: 8, max: 30 })) {
+    errors = "Password must contain at least 8 character";
+  }
+
+  return {
+    errors,
+    isValid: isEmpty(errors),
+  };
+};
+module.exports = { validateSignup, validateLogin };
