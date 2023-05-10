@@ -35,9 +35,6 @@ const Routes = require("./routers");
 Routes(app);
 
 app.all("*", (req, res, next) => {
-  //هيشوف كل الراوتس اللي فوق لو ملقاش اللي انا دخلته هيخش علي دي
-  //احنا عاملين الايرور دا علشان لو دخلنا راوت مش موجود اصلا يرجع يقولي انه م موجود
-  // const err = new Error(`Can not find this route ${req.originalUrl}`);
   next(new ApiErr(`Can not find this route ${req.originalUrl}`, 400));
 });
 /////////////////////////////////////////////
@@ -56,7 +53,8 @@ const server = app.listen(PORT, () => {
   console.log(`Your port is running : ${PORT}`);
 });
 
-// اي ايرور هيحصل خارج اكسبريس مش معمول ليه هندله دا هيلقطه و يجيبه
+//any err un handled -->catch
+
 process.on("unhandledRejection", (err) => {
   console.error(`unhandledRejection Errors ${err.name} |${err.message}`);
   server.close(() => {
