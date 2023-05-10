@@ -129,7 +129,6 @@ module.exports = {
     if (!visa) {
       return res.json({ message: "Visa not found" });
     }
-    console.log(visa);
 
     // check if the visa card is expired
     const checkExpired = visa.visaExpired > Date.now();
