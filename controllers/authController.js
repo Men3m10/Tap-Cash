@@ -18,17 +18,17 @@ module.exports = {
     const { errors, isValid } = validateSignup(req.body);
 
     if (!isValid) {
-      return res.status(400).json({ message: errors });
+      return res.json({ message: errors });
     }
     // check if the email already exists in the database
     const existingUser = await User.findOne({ email });
     if (existingUser) {
-      return res.status(400).json({ message: "Email already taken" });
+      return res.json({ message: "Email already taken" });
     }
     // check if the phone already exists in the database
     const existingUserphone = await User.findOne({ phone });
     if (existingUserphone) {
-      return res.status(400).json({ message: "phone already taken" });
+      return res.json({ message: "phone already taken" });
     }
 
     // check if the ssid already exists in the database
@@ -112,7 +112,7 @@ module.exports = {
     const { errors, isValid } = validateLogin(req.body);
 
     if (!isValid) {
-      return res.status(400).json({ message: errors });
+      return res.json({ message: errors });
     }
     const user = await User.findOne({ ssid })
       .populate("wallet")
