@@ -5,8 +5,8 @@ const bcrypt = require("bcryptjs");
 const sendEmail = require("../utils/sendEmail");
 const generateToken = require("../utils/createToken");
 const {
-  signUpValidation,
-  logInValidation,
+  validateLogin,
+  validateSignup,
 } = require("../utils/validation/authValidation");
 const User = require("../models/userModel");
 const Wallet = require("../models/walletModel");
@@ -14,26 +14,21 @@ const Wallet = require("../models/walletModel");
 module.exports = {
   signUp: asyncHandler(async (req, res, next) => {
     //1) get the user data from the request body
-    const {
-      name,
-      email,
-      password,
-      role,
-      ssid,
-      phone,
-      parent,
-      confirmPassword,
-    } = req.body;
-    signUpValidation(req, res, name, email, password, ssid, confirmPassword);
+    const { name, email, password, role, ssid, phone, parent } = req.body;
+    const { errors, isValid } = validateSignup(req.body);
+
+    if (!isValid) {
+      return res.status(400).json({ message: errors });
+    }
     // check if the email already exists in the database
     const existingUser = await User.findOne({ email });
     if (existingUser) {
-      return res.json({ message: "Email already taken" });
+      return res.status(400).json({ message: "Email already taken" });
     }
     // check if the phone already exists in the database
     const existingUserphone = await User.findOne({ phone });
     if (existingUserphone) {
-      return res.json({ message: "phone already taken" });
+      return res.status(400).json({ message: "phone already taken" });
     }
 
     // check if the ssid already exists in the database
@@ -113,7 +108,12 @@ module.exports = {
     //2- check ssid is created and password is correct
     // get the user credentials from the request body
     const { ssid, password } = req.body;
-    logInValidation(res, password, ssid);
+
+    const { errors, isValid } = validateLogin(req.body);
+
+    if (!isValid) {
+      return res.status(400).json({ message: errors });
+    }
     const user = await User.findOne({ ssid })
       .populate("wallet")
       .populate("transactions")
