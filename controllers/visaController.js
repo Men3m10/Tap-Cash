@@ -90,7 +90,7 @@ module.exports = {
       cvv: hashedVisacvv,
       balance: amount,
       owner: req.user.id,
-      //add expiration time to visa (5 min)
+      //add expiration time to visa (1 min)
       visaExpired: Date.now() + 1 * 60 * 1000, //mille second to second
     });
     // Save the visa credit card to the database
