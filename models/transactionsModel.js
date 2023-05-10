@@ -11,11 +11,6 @@ const transactionSchema = new Schema(
       type: Date,
       default: Date.now,
     },
-    status: {
-      type: String,
-      enum: ["pending", "approved", "declined"],
-      default: "pending",
-    },
     sender: {
       type: mongoose.Schema.ObjectId,
       ref: "User",
