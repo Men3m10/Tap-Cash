@@ -3,11 +3,6 @@ const express = require("express");
 const Router = express.Router();
 
 const {
-  signupValidator,
-  loginValidator,
-} = require("../utils/validation/authValidation");
-
-const {
   signUp,
   login,
   forgetPassword,
