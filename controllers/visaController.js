@@ -129,23 +129,23 @@ module.exports = {
     if (!visa) {
       return res.json({ message: "Visa not found" });
     }
+    console.log(visa);
 
     // check if the visa card is expired
-    const checkExpired = await Visa.findOne({
-      visaExpired: { $gt: Date.now() },
-    }); //لازم يكون وقت الانتهاء اكبر من الوقت اللي انا بدخله فيه
+    const checkExpired = visa.visaExpired > Date.now();
+    //لازم يكون وقت الانتهاء اكبر من الوقت اللي انا بدخله فيه
     if (!checkExpired) {
       visa.status === "Expired";
       await visa.save();
       return res.json({ message: "Visa is expired" });
     }
-
+    req.number = number;
     next();
   }),
   refundBalanceFromExpired: asyncHandler(async (req, res, next) => {
     //1)get Visa
-    const { number } = req.body;
     //hashing visa
+    let number = req.number;
     const hashedVisanum = crypto
       .createHash("sha256")
       .update(number)
@@ -166,6 +166,7 @@ module.exports = {
       await wallet.save();
     }
     res.status(200).json({ message: "the rest of visa balance is refunded " });
+    next();
   }),
   payByVisa: asyncHandler(async (req, res, next) => {
     // Get the card details from the request body
