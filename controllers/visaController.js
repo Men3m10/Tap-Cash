@@ -17,6 +17,7 @@ module.exports = {
       return res.json({ message: "name or amount is invalid" });
     }
     // Generate a valid visa number using the generateVisaNumber function
+    // Luhn algorithm-->simple checksum formula used to validate a variety of identification numbers,
     const generateVisaNumber = () => {
       // Initialize an empty string to store the number
       let number = "";
