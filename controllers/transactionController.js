@@ -31,6 +31,10 @@ module.exports = {
       return res.json({ message: "Insufficient funds" });
     }
 
+    const receiverWallet = await Wallet.findOne({
+      owner: receiverUser._id,
+    });
+
     // create a new transaction instance with the data
     const newTransaction = new Transaction({
       amount,
@@ -49,6 +53,18 @@ module.exports = {
     await User.findByIdAndUpdate(receiverUser._id, {
       $push: { transactions: newTransaction._id },
     });
+    if (!senderWallet || !receiverWallet) {
+      return res.json({ message: "Wallet not found" });
+    }
+
+    if (senderWallet.balance < newTransaction.amount) {
+      return res.json({ message: "Insufficient balance" });
+    }
+    // Update the sender and receiver wallets balance
+    senderWallet.balance -= newTransaction.amount;
+    receiverWallet.balance += newTransaction.amount;
+    await senderWallet.save();
+    await receiverWallet.save();
 
     // send back th transaction data as a response
     res.status(201).json({ message: "Done", newTransaction });
