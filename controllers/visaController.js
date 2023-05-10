@@ -138,13 +138,12 @@ module.exports = {
       await visa.save();
       return res.json({ message: "Visa is expired" });
     }
-    req.number = number;
     next();
   }),
   refundBalanceFromExpired: asyncHandler(async (req, res, next) => {
     //1)get Visa
     //hashing visa
-    let number = req.number;
+    const { number } = req.body;
     const hashedVisanum = crypto
       .createHash("sha256")
       .update(number)
@@ -165,7 +164,6 @@ module.exports = {
       await wallet.save();
     }
     res.status(200).json({ message: "the rest of visa balance is refunded " });
-    next();
   }),
   payByVisa: asyncHandler(async (req, res, next) => {
     // Get the card details from the request body
